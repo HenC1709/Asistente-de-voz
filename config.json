@@ -1,0 +1,17 @@
+{
+  "wake_word": "jarvis",
+  "wake_timeout_seconds": 8,
+  "recognition": {
+    "engine": "google",
+    "language": "es-VE",
+    "microphone_index": null,
+    "phrase_time_limit": 7,
+    "network_timeout": 8,
+    "model_path": "models/vosk-model-small-es-0.42"
+  },
+  "voice": {"enabled": true, "rate": 175, "volume": 0.85, "voice_id": null},
+  "websites": {"youtube": "https://www.youtube.com", "google": "https://www.google.com"},
+  "programs": {},
+  "games": {},
+  "allowed_folder": "personal/archivos"
+}

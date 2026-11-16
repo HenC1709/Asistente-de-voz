@@ -1,0 +1,15 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+logs/
+*.log
+build/
+dist/
+models/
+personal/
+config.local.json
+.env
+Roadmap_Asistente_de_Voz.docx
