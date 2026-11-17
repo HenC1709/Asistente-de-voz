@@ -37,7 +37,7 @@ def build_service(config, phrases, web, player, clock, monotonic=time.monotonic)
 
 
 def parser():
-    result = argparse.ArgumentParser(description="Asistente de voz para Windows · sprints 0 a 3")
+    result = argparse.ArgumentParser(description="Asistente de voz para Windows · sprints 0 a 5")
     result.add_argument("--config", type=Path, default=PROJECT_ROOT / "config.json")
     result.add_argument("--text", action="store_true", help="Consola sin micrófono ni palabra clave")
     result.add_argument("--mute", action="store_true", help="Desactivar síntesis de voz")
@@ -92,6 +92,19 @@ def main(argv=None) -> int:
         web = PreviewWebGateway() if args.dry_run else WebbrowserGateway()
         player = PreviewAudioPlayer() if args.dry_run else WavAudioPlayer(PROJECT_ROOT / "assets/sounds/tarareo.wav")
         service = build_service(config, phrases, web, player, SystemClock())
+        from asistente.application.use_cases.local_actions import LocalActions
+        from asistente.infrastructure.system.local_actions import LocalFiles, ConfiguredLauncher
+        base = args.config.resolve().parent
+        folder = Path(config["allowed_folder"])
+        if not folder.is_absolute():
+            folder = base / folder
+        actions = LocalActions(LocalFiles(folder, args.dry_run), ConfiguredLauncher(
+            {**config.get("programs", {}), **config.get("games", {})}, base, args.dry_run), time.monotonic)
+        for aliases, handler in [(("abre programa", "abre juego"), actions.launch),
+                                 (("busca archivo",), actions.search), (("crea archivo",), actions.create),
+                                 (("borra archivo",), actions.delete), (("confirmar borrado",), actions.confirm)]:
+            service.router.register(aliases, handler, parameterized=True)
+        service.router.register(("cancelar borrado",), actions.cancel)
 
         def respond(message):
             print(f"Asistente: {message}", flush=True)
@@ -105,6 +118,10 @@ def main(argv=None) -> int:
                     return result.exit_requested
                 if voice and args.debug_voice:
                     print(f"[Diagnóstico] No se detectó la activación «{config['wake_word']}».", flush=True)
+            except (ValueError, FileNotFoundError, FileExistsError) as error:
+                respond(str(error))
+                if args.command is not None:
+                    raise
             except Exception:
                 logger.exception("Falló la ejecución de un comando")
                 respond(phrases.get("error"))

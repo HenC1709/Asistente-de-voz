@@ -1,6 +1,6 @@
 # Asistente de voz para Windows
 
-Proyecto en Python basado en `Roadmap_Asistente_de_Voz.docx`. Esta entrega implementa los sprints **0, 1, 2 y 3** del MVP 0: escucha, comandos, búsqueda web, voz y personalidad. El MVP 0 completo del roadmap abarca hasta el sprint 5; programas, juegos y gestión de archivos aún no están implementados.
+Proyecto en Python basado en `Roadmap_Asistente_de_Voz.docx`. Esta entrega implementa las funcionalidades de los sprints **0 a 4** y prepara la instalación y aceptación del **sprint 5**. Incluye programas, juegos configurados y archivos con papelera. La validación en otra PC, el video y el reconocimiento con la voz del usuario siguen pendientes. Consulta [acciones y portabilidad](docs/sprints-4-5.md).
 
 ## Arrancar en esta computadora
 
@@ -89,7 +89,7 @@ La elección definitiva depende de tu acento y tu micrófono. Repite cinco veces
 
 ## Configuración y diagnóstico
 
-`config.json` contiene palabra clave, ventana de activación, idioma, índice del micrófono, tiempos máximos, voz y sitios. `programs`, `games` y `allowed_folder` son reservas para el sprint 4; no tienen acciones asociadas todavía. Las rutas relativas del modelo se resuelven respecto al archivo de configuración. Los recursos de la aplicación se resuelven respecto al proyecto, independientemente del directorio actual.
+`config.json` contiene palabra clave, ventana de activación, idioma, índice del micrófono, tiempos máximos, voz y sitios. `programs` y `games` contienen nombres y rutas de ejecutables; `allowed_folder` limita las acciones de archivos. Los comandos nuevos se detallan en [sprints 4 y 5](docs/sprints-4-5.md). Las rutas relativas del modelo se resuelven respecto al archivo de configuración. Los recursos de la aplicación se resuelven respecto al proyecto, independientemente del directorio actual.
 
 Puedes copiar la configuración a `config.local.json` (ignorado por Git) y pasar `--config config.local.json`.
 

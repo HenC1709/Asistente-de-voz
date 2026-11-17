@@ -1,3 +1,7 @@
+# Actualización de sprints 4 y 5
+
+Se implementaron las acciones locales y la preparación de portabilidad. Pasan 44 pruebas. Consulta [estado y aceptación actual](sprints-4-5.md). El contenido siguiente conserva la evidencia histórica de la entrega anterior.
+
 # Estado de la entrega
 
 Fecha: 16 de noviembre de 2026. Alcance: sprints 0 a 3 del roadmap, versión de desarrollo `0.1.0.dev3`.

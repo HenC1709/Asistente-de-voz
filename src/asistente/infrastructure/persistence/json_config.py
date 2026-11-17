@@ -39,6 +39,12 @@ def load_config(path: Path) -> dict:
         parsed = urlparse(url)
         if parsed.scheme not in ("http", "https") or not parsed.netloc:
             raise ValueError(f"URL inválida para {name}: usa http o https.")
+    for section in ('programs', 'games'):
+        entries = config.get(section)
+        if not isinstance(entries, dict) or any(not isinstance(k, str) or not k.strip() or not isinstance(v, str) or not v.strip() for k, v in entries.items()):
+            raise ValueError(f'{section} debe contener nombres y rutas de ejecutables.')
+    if not isinstance(config.get('allowed_folder'), str) or not config['allowed_folder'].strip():
+        raise ValueError('allowed_folder debe indicar una carpeta autorizada.')
     return config
 
 
