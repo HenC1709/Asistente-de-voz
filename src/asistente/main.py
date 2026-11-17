@@ -33,11 +33,11 @@ def build_service(config, phrases, web, player, clock, monotonic=time.monotonic)
     router.register(("tararea", "tararear"), HumSong(phrases, player))
     router.register(("ayuda", "comandos"), lambda _: CommandResult(phrases.get("help")))
     router.register(("salir", "adios", "hasta luego"), lambda _: CommandResult(phrases.get("goodbye"), True))
-    return AssistantService(router, phrases, config["wake_word"], config["wake_timeout_seconds"], monotonic)
+    return AssistantService(router, phrases, config["wake_word"], config["wake_timeout_seconds"], monotonic, tuple(config.get("wake_aliases", [])))
 
 
 def parser():
-    result = argparse.ArgumentParser(description="Asistente de voz para Windows · sprints 0 a 3")
+    result = argparse.ArgumentParser(description="Asistente de voz para Windows · sprints 0 a 5")
     result.add_argument("--config", type=Path, default=PROJECT_ROOT / "config.json")
     result.add_argument("--text", action="store_true", help="Consola sin micrófono ni palabra clave")
     result.add_argument("--mute", action="store_true", help="Desactivar síntesis de voz")
@@ -92,6 +92,19 @@ def main(argv=None) -> int:
         web = PreviewWebGateway() if args.dry_run else WebbrowserGateway()
         player = PreviewAudioPlayer() if args.dry_run else WavAudioPlayer(PROJECT_ROOT / "assets/sounds/tarareo.wav")
         service = build_service(config, phrases, web, player, SystemClock())
+        from asistente.application.use_cases.local_actions import LocalActions
+        from asistente.infrastructure.system.local_actions import LocalFiles, ConfiguredLauncher
+        base = args.config.resolve().parent
+        folder = Path(config["allowed_folder"])
+        if not folder.is_absolute():
+            folder = base / folder
+        actions = LocalActions(LocalFiles(folder, args.dry_run), ConfiguredLauncher(
+            {**config.get("programs", {}), **config.get("games", {})}, base, args.dry_run), time.monotonic)
+        for aliases, handler in [(("abre programa", "abre juego"), actions.launch),
+                                 (("busca archivo",), actions.search), (("crea archivo",), actions.create),
+                                 (("borra archivo",), actions.delete), (("confirmar borrado",), actions.confirm)]:
+            service.router.register(aliases, handler, parameterized=True)
+        service.router.register(("cancelar borrado",), actions.cancel)
 
         def respond(message):
             print(f"Asistente: {message}", flush=True)
@@ -99,12 +112,16 @@ def main(argv=None) -> int:
 
         def execute(text, voice=False):
             try:
-                result = service.handle(text, require_wake_word=voice)
+                result = service.handle(text, require_wake_word=voice and config.get("require_wake_word", True))
                 if result:
                     respond(result.message)
                     return result.exit_requested
                 if voice and args.debug_voice:
                     print(f"[Diagnóstico] No se detectó la activación «{config['wake_word']}».", flush=True)
+            except (ValueError, FileNotFoundError, FileExistsError) as error:
+                respond(str(error))
+                if args.command is not None:
+                    raise
             except Exception:
                 logger.exception("Falló la ejecución de un comando")
                 respond(phrases.get("error"))
@@ -139,6 +156,7 @@ def main(argv=None) -> int:
             factory = lambda _: VoskDecoder(model)
         diagnostic = (lambda message: print(f"[Diagnóstico] {message}", flush=True)) if args.debug_voice else None
         listener = MicrophoneRecognizer(settings, factory, diagnostic=diagnostic)
+        print(f"Micrófono seleccionado: {listener.device_description}", flush=True)
         events = Queue(maxsize=4)
 
         def offer(kind, payload):
@@ -147,7 +165,10 @@ def main(argv=None) -> int:
             except Full:
                 pass
 
-        respond(f"Listo. Di {config['wake_word']} y un comando.")
+        if config.get("require_wake_word", True):
+            respond(f"Listo. Di {config['wake_word']} y un comando.")
+        else:
+            respond("Listo. Di directamente un comando, por ejemplo: cuéntame un chiste.")
         print("Calibrando micrófono; guarda silencio un momento. Ctrl+C para terminar.")
         listener.start(lambda text: offer("text", text), lambda error: offer("error", error))
         print("Escuchando…", flush=True)

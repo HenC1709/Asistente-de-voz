@@ -1,3 +1,7 @@
+# Actualización de sprints 4 y 5
+
+Se implementaron las acciones locales y la preparación de portabilidad. Pasan 44 pruebas. Consulta [estado y aceptación actual](sprints-4-5.md). El contenido siguiente conserva la evidencia histórica de la entrega anterior.
+
 # Estado de la entrega
 
 Fecha: 16 de noviembre de 2026. Alcance: sprints 0 a 3 del roadmap, versión de desarrollo `0.1.0.dev3`.
@@ -32,10 +36,10 @@ Los diagnósticos de SAPI y las instalaciones requirieron ejecución fuera del a
 
 ## Aceptación manual pendiente
 
-1. Iniciar `scripts/start.ps1`, guardar silencio durante la calibración y decir “Jarvis, abre YouTube”. Confirmar que se abre en el navegador predeterminado.
-2. Decir “Jarvis, busca en Google recetas de arepas” y comprobar la búsqueda.
+1. Iniciar `scripts/start.ps1`, guardar silencio durante la calibración y decir “Navi, abre YouTube”. Confirmar que se abre en el navegador predeterminado.
+2. Decir “Navi, busca en Google recetas de arepas” y comprobar la búsqueda.
 3. Probar chiste, hora, tarareo y salida, verificando el sonido de los altavoces y que no se active con su propia voz.
-4. Comparar cinco repeticiones por motor con la voz del usuario. Para Vosk, probar una palabra española como `asistente` en `wake_word` si “Jarvis” falla; esto aún requiere validación de acento.
+4. Comparar cinco repeticiones por motor con la voz del usuario. Para Vosk, probar una palabra española como `asistente` en `wake_word` si “Navi” falla; esto aún requiere validación de acento.
 5. Probar desconexión de internet, micrófono ausente, ruido y una sesión prolongada.
 
 Las pruebas automáticas y el audio sintético no sustituyen esta aceptación. La gestión de archivos y apertura de programas/juegos (sprint 4), prueba en otra computadora (sprint 5), personaje e instalador siguen fuera de esta entrega.

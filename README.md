@@ -1,6 +1,13 @@
 # Asistente de voz para Windows
 
-Proyecto en Python basado en `Roadmap_Asistente_de_Voz.docx`. Esta entrega implementa los sprints **0, 1, 2 y 3** del MVP 0: escucha, comandos, búsqueda web, voz y personalidad. El MVP 0 completo del roadmap abarca hasta el sprint 5; programas, juegos y gestión de archivos aún no están implementados.
+**Modo actual: comandos directos, sin decir Navi.** En `config.json`,
+`require_wake_word` está en `false`. Di “abre YouTube”, “cuéntame un chiste”
+o “qué hora es”. El asistente procesará las frases que escuche mientras esté
+abierto. El borrado sigue exigiendo confirmación. Para recuperar el comportamiento
+con palabra de activación descrito en los ejemplos siguientes, cambia ese valor
+a `true` y reinicia.
+
+Proyecto en Python basado en `Roadmap_Asistente_de_Voz.docx`. Esta entrega implementa las funcionalidades de los sprints **0 a 4** y prepara la instalación y aceptación del **sprint 5**. Incluye programas, juegos configurados y archivos con papelera. La validación en otra PC, el video y el reconocimiento con la voz del usuario siguen pendientes. Consulta [acciones y portabilidad](docs/sprints-4-5.md).
 
 ## Arrancar en esta computadora
 
@@ -10,9 +17,9 @@ Abre PowerShell en esta carpeta y ejecuta:
 .\scripts\start.ps1
 ```
 
-Espera a que aparezca `Escuchando…` y di **“Jarvis, abre YouTube”**. También puedes decir “Jarvis”, esperar “Te escucho” y dar el comando dentro de 8 segundos. Termina con “Jarvis, salir” o `Ctrl+C`.
+Espera a que aparezca `Escuchando…` y di **“Navi, abre YouTube”**. También puedes decir “Navi”, esperar “Te escucho” y dar el comando dentro de 8 segundos. Termina con “Navi, salir” o `Ctrl+C`.
 
-Para probar sin micrófono, escribe comandos sin decir Jarvis:
+Para probar sin micrófono, escribe comandos sin decir Navi:
 
 ```powershell
 .\scripts\start.ps1 -Text
@@ -55,7 +62,7 @@ Para pruebas y reconocimiento offline:
 
 ## Comandos
 
-En modo voz antepone la palabra de activación configurada (por defecto `jarvis`).
+En modo voz antepone la palabra de activación configurada (por defecto `navi`).
 
 | Comando | Resultado |
 | --- | --- |
@@ -73,7 +80,7 @@ No interpreta lenguaje libre ni ejecuta instrucciones arbitrarias. Una frase com
 
 ## Google y Vosk
 
-El valor inicial `recognition.engine = "google"` usa [SpeechRecognition](https://pypi.org/project/SpeechRecognition/) y necesita internet. No requiere configurar una API de pago, pero su servicio gratuito no garantiza disponibilidad. **Los fragmentos capturados se envían a Google antes de detectar “Jarvis”**: la activación se comprueba sobre la transcripción, no con un detector local de palabra clave. La aplicación no guarda grabaciones del micrófono ni transcripciones en disco.
+El valor inicial `recognition.engine = "google"` usa [SpeechRecognition](https://pypi.org/project/SpeechRecognition/) y necesita internet. No requiere configurar una API de pago, pero su servicio gratuito no garantiza disponibilidad. **Los fragmentos capturados se envían a Google antes de detectar “Navi”**: la activación se comprueba sobre la transcripción, no con un detector local de palabra clave. La aplicación no guarda grabaciones del micrófono ni transcripciones en disco.
 
 Para reconocimiento local utiliza [Vosk](https://alphacephei.com/vosk/). Instala su dependencia y descarga el [modelo oficial pequeño en español](https://alphacephei.com/vosk/models), `vosk-model-small-es-0.42` (39 MB, Apache 2.0):
 
@@ -85,11 +92,23 @@ Para reconocimiento local utiliza [Vosk](https://alphacephei.com/vosk/). Instala
 
 También puedes cambiar `recognition.engine` a `vosk` en `config.json`. El modelo se descarga una vez y queda en `models/`, ignorado por Git. Con Vosk, el reconocimiento y la voz funcionan sin internet; abrir páginas y hacer búsquedas sigue necesitando conexión. No hay cambio automático de Vosk a Google para evitar enviar audio inesperadamente.
 
-La elección definitiva depende de tu acento y tu micrófono. Repite cinco veces “Jarvis, abre YouTube” y “Jarvis, busca en Google recetas de arepas” con cada motor. Compara aciertos y demora, primero en silencio y luego con ruido. Las pruebas con audio sintético no sustituyen esa comparación.
+La elección definitiva depende de tu acento y tu micrófono. Repite cinco veces “Navi, abre YouTube” y “Navi, busca en Google recetas de arepas” con cada motor. Compara aciertos y demora, primero en silencio y luego con ruido. Las pruebas con audio sintético no sustituyen esa comparación.
 
 ## Configuración y diagnóstico
 
-`config.json` contiene palabra clave, ventana de activación, idioma, índice del micrófono, tiempos máximos, voz y sitios. `programs`, `games` y `allowed_folder` son reservas para el sprint 4; no tienen acciones asociadas todavía. Las rutas relativas del modelo se resuelven respecto al archivo de configuración. Los recursos de la aplicación se resuelven respecto al proyecto, independientemente del directorio actual.
+`wake_aliases: ["navy"]` permite activar Navi cuando el reconocedor transcribe
+su nombre como “navy”. Se comparan palabras completas; “vi”, “me vi” y “happy”
+no activan el asistente. Estos alias no corrigen fallos de red o de transcripción.
+
+En esta laptop `recognition.microphone_name` selecciona `Microphone Array`, el
+micrófono integrado AMD. Se configuró `microphone_api: "MME"` como prueba ante la distorsión reportada con WASAPI; la calidad audible aún requiere validación. El dispositivo elegido se muestra
+al arrancar. La selección por nombre tolera cambios de índice al conectar audífonos.
+En otra PC, cambia el nombre o usa `null` para seguir el predeterminado de Windows.
+`microphone_index` y `--microphone` tienen prioridad si se especifican. Si el nombre
+no existe, se muestra un error en lugar de elegir otro micrófono silenciosamente.
+Reinicia el asistente después de cambiar la configuración o el dispositivo.
+
+`config.json` contiene palabra clave, ventana de activación, idioma, índice del micrófono, tiempos máximos, voz y sitios. `programs` y `games` contienen nombres y rutas de ejecutables; `allowed_folder` limita las acciones de archivos. Los comandos nuevos se detallan en [sprints 4 y 5](docs/sprints-4-5.md). Las rutas relativas del modelo se resuelven respecto al archivo de configuración. Los recursos de la aplicación se resuelven respecto al proyecto, independientemente del directorio actual.
 
 Puedes copiar la configuración a `config.local.json` (ignorado por Git) y pasar `--config config.local.json`.
 

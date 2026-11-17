@@ -30,7 +30,7 @@ def main():
     folder = ROOT / "logs"
     folder.mkdir(exist_ok=True)
     wav = folder / "synthetic_test.wav"
-    engine.save_to_file("Jarvis abre YouTube", str(wav))
+    engine.save_to_file("Navi abre YouTube", str(wav))
     engine.runAndWait()
     engine.stop()
     assert wav.is_file() and wav.stat().st_size > 44
@@ -43,13 +43,13 @@ def main():
     text = decoder.decode(audio)
     assert text, "Vosk no devolvió texto"
     print(f"Vosk, resultado sintético: {text}")
-    if normalize(text) == "jarvis abre youtube":
+    if normalize(text) == "navi abre youtube":
         print("PASS: Vosk reconoce la frase de activación y comando")
     else:
         print("AVISO: Vosk no reconoció el comando completo; prueba otra palabra clave o Google.")
     if args.google:
         text = GoogleDecoder(recognizer, config["recognition"]["language"]).decode(audio)
-        assert normalize(text) == "jarvis abre youtube", repr(text)
+        assert normalize(text) == "navi abre youtube", repr(text)
         print(f"PASS: Google transcribe audio sintético: {text}")
     errors = []
     # Exercise the real background worker without sending captured audio anywhere.

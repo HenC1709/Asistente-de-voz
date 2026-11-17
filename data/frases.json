@@ -1,12 +1,37 @@
 {
-  "ready": ["Listo. Di Jarvis y un comando.", "Todo listo. Te escucho."],
-  "awake": ["Te escucho.", "Dime, ¿qué hacemos?"],
-  "opened": ["Listo, abriendo {site}.", "Vamos a {site}."],
-  "search": ["Buscando {query} en Google.", "Vamos a investigar: {query}."],
-  "unknown": ["No conozco ese comando. Di ayuda para ver las opciones."],
-  "error": ["No pude completar esa acción. Revisa el registro para más detalles."],
-  "goodbye": ["Hasta luego.", "Me tomo un descanso. Hasta pronto."],
-  "hum": ["Esa fue mi pequeña melodía."],
-  "time": ["Son las {time}."],
-  "help": ["Puedes decir: abre YouTube, busca en Google recetas de arepas, cuéntame un chiste, qué hora es, tararea o salir."]
+  "ready": [
+    "Listo. Di Navi y un comando.",
+    "Todo listo. Te escucho."
+  ],
+  "awake": [
+    "Te escucho.",
+    "Dime, ¿qué hacemos?"
+  ],
+  "opened": [
+    "Listo, abriendo {site}.",
+    "Vamos a {site}."
+  ],
+  "search": [
+    "Buscando {query} en Google.",
+    "Vamos a investigar: {query}."
+  ],
+  "unknown": [
+    "No conozco ese comando. Di ayuda para ver las opciones."
+  ],
+  "error": [
+    "No pude completar esa acción. Revisa el registro para más detalles."
+  ],
+  "goodbye": [
+    "Hasta luego.",
+    "Me tomo un descanso. Hasta pronto."
+  ],
+  "hum": [
+    "Esa fue mi pequeña melodía."
+  ],
+  "time": [
+    "Son las {time}."
+  ],
+  "help": [
+    "Puedes decir: abre YouTube, busca en Google recetas, chiste, hora, tararea, abre programa seguido del nombre, crea archivo prueba.txt, busca archivo prueba, borra archivo prueba.txt, confirmar borrado prueba.txt, cancelar borrado o salir."
+  ]
 }
