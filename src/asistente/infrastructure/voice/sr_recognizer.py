@@ -1,7 +1,20 @@
 import logging
 import threading
+from array import array
+import math
+import sys
 
 logger = logging.getLogger(__name__)
+
+
+def audio_summary(audio):
+    samples = array('h', audio.get_raw_data(convert_width=2))
+    if sys.byteorder != 'little':
+        samples.byteswap()
+    duration = len(samples) / audio.sample_rate
+    rms = math.sqrt(sum(x * x for x in samples) / len(samples)) if samples else 0
+    peak = max((abs(x) for x in samples), default=0)
+    return f"{duration:.2f} s; nivel RMS {rms:.0f}/32768; pico {peak}/32768"
 
 
 class GoogleDecoder:
@@ -21,7 +34,9 @@ class MicrophoneRecognizer:
         self.diagnostic = diagnostic or (lambda message: None)
         self.recognizer = sr.Recognizer()
         self.recognizer.operation_timeout = config["network_timeout"]
-        self.microphone = sr.Microphone(device_index=config["microphone_index"])
+        from asistente.infrastructure.voice.microphone_selection import resolve_input
+        index, self.device_description = resolve_input(config)
+        self.microphone = sr.Microphone(device_index=index)
         self.decoder = decoder_factory(self.recognizer)
         self.limit = config["phrase_time_limit"]
         self._stop = threading.Event()
@@ -33,7 +48,7 @@ class MicrophoneRecognizer:
     def start(self, on_text, on_error) -> None:
         # Probe synchronously so missing/blocked microphones produce a clear startup error.
         with self.microphone as source:
-            self.recognizer.adjust_for_ambient_noise(source, duration=0.7)
+            self.recognizer.adjust_for_ambient_noise(source, duration=1.5)
         self.diagnostic(f"Micrófono: {self.microphone.device_index!r} (None = predeterminado). Umbral: {self.recognizer.energy_threshold:.0f}")
         self._thread = threading.Thread(target=self._listen, args=(on_text, on_error),
                                         name="microphone", daemon=True)
@@ -53,8 +68,10 @@ class MicrophoneRecognizer:
                             continue
                         generation = self._generation
                         with self.microphone as source:
-                            audio = self.recognizer.listen(source, timeout=1, phrase_time_limit=self.limit)
-                    self.diagnostic("Audio capturado; intentando transcribir…")
+                            audio = self._capture(source)
+                        if audio is None:
+                            continue
+                    self.diagnostic(f"Audio capturado: {audio_summary(audio)}; umbral {self.recognizer.energy_threshold:.0f}; intentando transcribir…")
                     text = self.decoder.decode(audio)
                     if not self._stop.is_set() and not self._paused.is_set() and generation == self._generation and text:
                         self._paused.set()
@@ -72,6 +89,19 @@ class MicrophoneRecognizer:
             on_error(RuntimeError(f"El micrófono se detuvo: {error}"))
         finally:
             self._stop.set()
+
+    def _capture(self, source):
+        # Keep the same stream open during silence; reopening every second can
+        # lose the start of a phrase while the device initializes again.
+        misses = 0
+        while not self._stop.is_set() and not self._paused.is_set():
+            try:
+                return self.recognizer.listen(source, timeout=1, phrase_time_limit=self.limit)
+            except self.sr.WaitTimeoutError:
+                misses += 1
+                if misses % 5 == 0:
+                    self.diagnostic(f"Esperando voz por encima del umbral {self.recognizer.energy_threshold:.0f}.")
+        return None
 
     @property
     def stopped(self) -> bool:

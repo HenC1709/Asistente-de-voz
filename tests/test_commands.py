@@ -52,14 +52,25 @@ def test_open_normalized(context, text):
 def test_requires_whole_wake_word(context):
     service, web, *_ = context
     assert service.handle("abre youtube") is None
-    assert service.handle("superjarvis abre youtube") is None
-    service.handle("Oye, Járvis, abre YouTube")
+    assert service.handle("supernavi abre youtube") is None
+    service.handle("Oye, Návi, abre YouTube")
     assert len(web.urls) == 1
+
+
+def test_navy_alias_and_reject_unrelated_words(context):
+    service, web, *_ = context
+    for word in ('vi', 'me vi', 'happy', 'supernavy'):
+        assert service.handle(word + ' abre youtube') is None
+    service.handle('Navy, abre youtube')
+    assert len(web.urls) == 1
+    assert service.handle('navy') is not None
+    service.handle('abre youtube')
+    assert len(web.urls) == 2
 
 
 def test_wake_then_command_consumes_window(context):
     service, web, _, now = context
-    assert service.handle("jarvis") is not None
+    assert service.handle("navi") is not None
     now[0] += 2
     service.handle("abre youtube")
     assert service.handle("abre youtube") is None
@@ -68,7 +79,7 @@ def test_wake_then_command_consumes_window(context):
 
 def test_wake_expires(context):
     service, web, _, now = context
-    service.handle("jarvis")
+    service.handle("navi")
     now[0] += 9
     assert service.handle("abre youtube") is None
     assert not web.urls
@@ -77,30 +88,30 @@ def test_wake_expires(context):
 @pytest.mark.parametrize("query", ["C++ y C#", "café & té", "100% gratis", "https://ejemplo.com/a?q=1", "¿cómo hacer arepas?"])
 def test_search_preserves_query_and_encodes(context, query):
     service, web, *_ = context
-    service.handle("Jarvis, busca en Google " + query)
+    service.handle("Navi, busca en Google " + query)
     assert parse_qs(urlparse(web.urls[0]).query)["q"] == [query]
 
 
 def test_empty_search_does_not_open(context):
     service, web, *_ = context
-    assert "qué buscar" in service.handle("jarvis busca en google").message
+    assert "qué buscar" in service.handle("navi busca en google").message
     assert not web.urls
 
 
 def test_unknown_does_not_execute_prefix(context):
     service, web, *_ = context
-    assert "No conozco" in service.handle("jarvis buscador google").message
-    assert "No conozco" in service.handle("jarvis abre youtube y borra archivos").message
+    assert "No conozco" in service.handle("navi buscador google").message
+    assert "No conozco" in service.handle("navi abre youtube y borra archivos").message
     assert not web.urls
 
 
 def test_personality_and_exit(context):
     service, _, audio, _ = context
-    assert "14:05" in service.handle("jarvis qué hora es").message
-    assert service.handle("jarvis cuéntame un chiste").message
-    service.handle("jarvis tararea")
+    assert "14:05" in service.handle("navi qué hora es").message
+    assert service.handle("navi cuéntame un chiste").message
+    service.handle("navi tararea")
     assert audio.played
-    assert service.handle("jarvis salir").exit_requested
+    assert service.handle("navi salir").exit_requested
 
 
 def test_duplicate_alias_rejected():
@@ -113,7 +124,7 @@ def test_duplicate_alias_rejected():
 def test_new_command_needs_only_registration(context):
     service, *_ = context
     service.router.register(("saluda",), lambda _: CommandResult("Hola"))
-    assert service.handle("jarvis saluda").message == "Hola"
+    assert service.handle("navi saluda").message == "Hola"
 
 
 def test_normalization():

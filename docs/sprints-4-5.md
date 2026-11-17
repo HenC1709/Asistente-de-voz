@@ -4,7 +4,7 @@ Esta entrega añade el código del sprint 4 y la preparación del sprint 5. La a
 
 ## Comandos nuevos
 
-En voz, anteponer Jarvis también a la confirmación:
+En voz, anteponer Navi también a la confirmación:
 
 - `abre programa editor` o `abre juego mi juego`
 - `crea archivo prueba.txt` (archivo vacío, nunca sobrescribe)
@@ -36,7 +36,7 @@ No admite comandos de shell ni argumentos. Las coincidencias aproximadas solo su
 
 ## Guion de demo de un minuto
 
-- 0–10 s: mostrar arranque y decir Jarvis, abre YouTube.
+- 0–10 s: mostrar arranque y decir Navi, abre YouTube.
 - 10–20 s: buscar recetas de arepas.
 - 20–30 s: pedir un chiste y la hora.
 - 30–45 s: crear prueba.txt, buscarlo y solicitar borrado.

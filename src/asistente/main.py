@@ -33,7 +33,7 @@ def build_service(config, phrases, web, player, clock, monotonic=time.monotonic)
     router.register(("tararea", "tararear"), HumSong(phrases, player))
     router.register(("ayuda", "comandos"), lambda _: CommandResult(phrases.get("help")))
     router.register(("salir", "adios", "hasta luego"), lambda _: CommandResult(phrases.get("goodbye"), True))
-    return AssistantService(router, phrases, config["wake_word"], config["wake_timeout_seconds"], monotonic)
+    return AssistantService(router, phrases, config["wake_word"], config["wake_timeout_seconds"], monotonic, tuple(config.get("wake_aliases", [])))
 
 
 def parser():
@@ -112,7 +112,7 @@ def main(argv=None) -> int:
 
         def execute(text, voice=False):
             try:
-                result = service.handle(text, require_wake_word=voice)
+                result = service.handle(text, require_wake_word=voice and config.get("require_wake_word", True))
                 if result:
                     respond(result.message)
                     return result.exit_requested
@@ -156,6 +156,7 @@ def main(argv=None) -> int:
             factory = lambda _: VoskDecoder(model)
         diagnostic = (lambda message: print(f"[Diagnóstico] {message}", flush=True)) if args.debug_voice else None
         listener = MicrophoneRecognizer(settings, factory, diagnostic=diagnostic)
+        print(f"Micrófono seleccionado: {listener.device_description}", flush=True)
         events = Queue(maxsize=4)
 
         def offer(kind, payload):
@@ -164,7 +165,10 @@ def main(argv=None) -> int:
             except Full:
                 pass
 
-        respond(f"Listo. Di {config['wake_word']} y un comando.")
+        if config.get("require_wake_word", True):
+            respond(f"Listo. Di {config['wake_word']} y un comando.")
+        else:
+            respond("Listo. Di directamente un comando, por ejemplo: cuéntame un chiste.")
         print("Calibrando micrófono; guarda silencio un momento. Ctrl+C para terminar.")
         listener.start(lambda text: offer("text", text), lambda error: offer("error", error))
         print("Escuchando…", flush=True)
